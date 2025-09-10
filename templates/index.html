@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTA - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
+            background-image: url('https://20essentials.github.io/project-000-128/assets/n1.avif');
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .page-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            mix-blend-mode: overlay;
+            background-color: #f0f;
+            animation: moveInner 10s ease infinite alternate;
+        }
+
+        @keyframes moveInner {
+            0% { background-color: rgba(240, 0, 255, 0.6); }
+            25% { background-color: rgba(0, 255, 0, 0.6); }
+            50% { background-color: rgba(0, 0, 255, 0.6); }
+            75% { background-color: rgba(255, 0, 0, 0.6); }
+            100% { background-color: rgba(255, 255, 0, 0.6); }
+        }
+
+        .card-3d-wrap {
+            position: relative;
+            width: 440px;
+            max-width: 100%;
+            height: 480px;
+            perspective: 800px;
+            margin-top: 20px;
+        }
+        .card-3d-wrapper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            transition: transform 0.7s ease-out;
+        }
+        #form-toggle:checked ~ .card-3d-wrap .card-3d-wrapper {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            background: rgba(17, 17, 34, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: absolute;
+            border-radius: 1rem;
+            left: 0;
+            top: 0;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        .form-input {
+            background-color: #1a1a2e;
+            border: 1px solid #2a2a4a;
+        }
+        .toggle-label {
+            transition: color .3s ease;
+        }
+        #form-toggle:checked ~ .toggle-labels .sign-in-label { color: #8b94a3; }
+        #form-toggle:not(:checked) ~ .toggle-labels .sign-in-label { color: #ffffff; font-weight: 700; }
+        #form-toggle:checked ~ .toggle-labels .sign-up-label { color: #ffffff; font-weight: 700; }
+        #form-toggle:not(:checked) ~ .toggle-labels .sign-up-label { color: #8b94a3; }
+        
+        .toggle-slider {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: #6366f1;
+            bottom: -5px;
+            left: 0;
+            border-radius: 99px;
+            transition: transform 0.3s ease-in-out;
+        }
+        #form-toggle:checked ~ .toggle-labels .toggle-slider {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="page-container relative min-h-screen w-full">
+        <div class="relative z-10 grid lg:grid-cols-2 items-center min-h-screen p-4">
+            <!-- Left Section -->
+            <div class="hidden lg:flex flex-col items-start justify-center p-12">
+                <div class="flex items-center gap-4 mb-4">
+                    <h1 class="text-6xl font-black tracking-tighter text-white">OUTA</h1>
+                    <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full -translate-y-4">BETA</span>
+                </div>
+                <h2 class="text-4xl font-bold text-white leading-tight">Build stunning landing pages in minutes.</h2>
+                <p class="text-gray-300 mt-4 max-w-lg">Go from idea to a high-converting page with our intuitive visual builder. No code required, just pure creativity.</p>
+                <div class="mt-8 flex gap-4">
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors"><i data-lucide="twitter" class="w-6 h-6"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors"><i data-lucide="instagram" class="w-6 h-6"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors"><i data-lucide="facebook" class="w-6 h-6"></i></a>
+                </div>
+            </div>
+
+            <!-- Right Section (Form) -->
+            <div class="flex flex-col items-center justify-center w-full">
+                 <div class="text-center">
+                    <div class="mb-6 lg:hidden">
+                        <h1 class="text-5xl font-black tracking-tighter text-white">OUTA</h1>
+                        <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full ">BETA</span>
+                    </div>
+                    
+                    <input class="hidden" type="checkbox" id="form-toggle">
+                    
+                    <div class="toggle-labels relative text-lg font-medium cursor-pointer w-64 mx-auto grid grid-cols-2 p-2">
+                        <label for="form-toggle" class="toggle-label sign-in-label cursor-pointer">Sign In</label>
+                        <label for="form-toggle" class="toggle-label sign-up-label cursor-pointer">Sign Up</label>
+                        <div class="toggle-slider"></div>
+                    </div>
+
+                    <div class="card-3d-wrap">
+                        <div class="card-3d-wrapper">
+                            <!-- Sign In Form -->
+                            <div class="card-front">
+                                <div class="p-8 md:p-10">
+                                    <h4 class="text-2xl font-bold mb-6 text-white">Welcome Back</h4>
+                                    <form id="signin-form" class="space-y-5">
+                                        <div class="relative">
+                                            <i data-lucide="at-sign" class="w-5 h-5 absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="email" name="email" placeholder="Your Email" class="form-input w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        </div>
+                                        <div class="relative">
+                                            <i data-lucide="lock" class="w-5 h-5 absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="password" name="password" placeholder="Your Password" class="form-input w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        </div>
+                                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                                            Sign In
+                                        </button>
+                                        <p class="text-center text-sm"><a href="#" class="text-gray-400 hover:text-indigo-400">Forgot your password?</a></p>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Sign Up Form -->
+                            <div class="card-back">
+                                <div class="p-8 md:p-10">
+                                    <h4 class="text-2xl font-bold mb-6 text-white">Create Account</h4>
+                                    <form id="signup-form" class="space-y-5">
+                                        <div class="relative">
+                                            <i data-lucide="user" class="w-5 h-5 absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="text" placeholder="Your Name" class="form-input w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        </div>
+                                        <div class="relative">
+                                            <i data-lucide="at-sign" class="w-5 h-5 absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="email" placeholder="Your Email" class="form-input w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        </div>
+                                        <div class="relative">
+                                            <i data-lucide="lock" class="w-5 h-5 absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"></i>
+                                            <input type="password" placeholder="Create Password" class="form-input w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                        </div>
+                                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                                            Sign Up
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        const signInForm = document.getElementById('signin-form');
+        const signUpForm = document.getElementById('signup-form');
+
+        signInForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = e.target.elements.email.value;
+            const password = e.target.elements.password.value;
+
+            try {
+                const response = await fetch('/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.message || 'Sign in failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during sign in');
+            }
+        });
+
+        signUpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const name = e.target.querySelector('input[type="text"]').value;
+            const email = e.target.querySelector('input[type="email"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.message || 'Sign up failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during sign up');
+            }
+        });
+
+    </script>
+</body>
+</html>
+

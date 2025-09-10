@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OUTA - Super Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        :root { --sidebar-width: 280px; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
+        }
+        .sidebar { width: var(--sidebar-width); transition: transform 0.3s ease-in-out; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 50; height: 100%; }
+            .sidebar.open { transform: translateX(0); }
+            main { padding-left: 0; }
+        }
+        main { transition: padding-left 0.3s ease-in-out; padding-left: var(--sidebar-width); }
+        .content-card {
+            background: rgba(26, 26, 78, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(220, 38, 38, 0.2);
+            color: #fff;
+            border-right: 3px solid #dc2626;
+        }
+         .sidebar-link.active i, .sidebar-link:hover i { color: #f87171; }
+        .modal { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .modal:not(.open) { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        .modal.open { opacity: 1; transform: scale(1); pointer-events: auto; }
+        .code-editor {
+            font-family: 'Source Code Pro', monospace;
+            background-color: #1a1a2e;
+            border: 1px solid #2a2a4a;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111122; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden"></div>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar bg-[#111122] flex flex-col fixed top-0 left-0 h-full overflow-y-auto z-50">
+            <div class="p-6 flex items-center gap-2 border-b border-red-500/20">
+                <i data-lucide="shield-alert" class="w-8 h-8 text-red-500"></i>
+                <h1 class="text-xl font-black tracking-tighter text-white">SUPER ADMIN</h1>
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" class="sidebar-link active flex items-center gap-3 p-3 rounded-md text-gray-300" data-page="page-dashboard">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-md text-gray-300" data-page="page-users">
+                    <i data-lucide="users" class="w-5 h-5"></i> User Management
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-md text-gray-300" data-page="page-hosted-pages">
+                    <i data-lucide="globe" class="w-5 h-5"></i> Hosted Pages
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-md text-gray-300" data-page="page-messages">
+                    <i data-lucide="mail" class="w-5 h-5"></i> Messages
+                </a>
+            </nav>
+            <div class="p-4 mt-auto border-t border-gray-700">
+                 <a href="/home" class="sidebar-link flex items-center gap-3 p-3 rounded-md text-gray-300">
+                    <i data-lucide="log-out" class="w-5 h-5"></i> Exit Admin Panel
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 w-full">
+            <header class="bg-[#111122]/80 backdrop-blur-sm sticky top-0 z-30 flex items-center justify-between p-4 border-b border-gray-800">
+                <div class="flex items-center gap-4">
+                    <button id="menu-btn" class="lg:hidden p-2 rounded-md hover:bg-gray-700">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <h2 id="page-title" class="text-xl font-bold">Dashboard</h2>
+                </div>
+            </header>
+            
+            <div class="p-4 sm:p-6 md:p-8">
+                <!-- Dashboard -->
+                <div id="page-dashboard" class="page-content">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                        <div class="content-card p-5 rounded-lg"><p class="text-sm font-medium text-gray-400">Total Users</p><p class="text-2xl sm:text-3xl font-bold mt-2">1,284</p></div>
+                        <div class="content-card p-5 rounded-lg"><p class="text-sm font-medium text-gray-400">Active Sessions</p><p class="text-2xl sm:text-3xl font-bold mt-2">312</p></div>
+                        <div class="content-card p-5 rounded-lg"><p class="text-sm font-medium text-gray-400">Blocked Users</p><p class="text-2xl sm:text-3xl font-bold mt-2 text-red-500">12</p></div>
+                    </div>
+                     <div class="content-card p-5 rounded-lg">
+                        <h3 class="font-bold mb-4">User Registrations (Last 30 Days by Hours)</h3>
+                        <div class="relative h-80"><canvas id="user-regs-chart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- User Management -->
+                <div id="page-users" class="page-content hidden">
+                    <div id="user-management-table" class="content-card rounded-lg p-5"></div>
+                </div>
+
+                <!-- Hosted Pages -->
+                <div id="page-hosted-pages" class="page-content hidden">
+                    <div class="content-card rounded-lg p-5">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">All Hosted Pages</h2>
+                            <div class="flex gap-3">
+                                <select id="hosted-pages-filter" class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                                    <option value="all">All Users</option>
+                                </select>
+                                <button id="refresh-hosted-pages" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div id="hosted-pages-table" class="overflow-x-auto">
+                            <!-- Hosted pages will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div id="page-messages" class="page-content hidden">
+                    <div id="messages-container" class="content-card rounded-lg p-5"></div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    
+    <!-- Block User Modal -->
+    <div id="block-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-md relative">
+            <div class="p-6 text-center">
+                <i data-lucide="shield-off" class="w-16 h-16 mx-auto text-red-500"></i>
+                <h3 class="mt-4 text-xl font-bold">Block User?</h3>
+                <p class="mt-2 text-sm text-gray-400">Are you sure you want to block <b id="user-to-block-name"></b>? They will lose access to their account.</p>
+            </div>
+            <div class="p-4 bg-gray-700/20 flex justify-end gap-4 rounded-b-xl">
+                <button id="cancel-block-btn" class="py-2 px-5 rounded-lg font-semibold hover:bg-gray-600">Cancel</button>
+                <button id="confirm-block-btn" class="py-2 px-5 rounded-lg font-semibold bg-red-600 hover:bg-red-500 text-white">Block User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unblock User Modal -->
+    <div id="unblock-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-md relative">
+            <div class="p-6 text-center">
+                <i data-lucide="shield-check" class="w-16 h-16 mx-auto text-emerald-500"></i>
+                <h3 class="mt-4 text-xl font-bold">Unblock User?</h3>
+                <p class="mt-2 text-sm text-gray-400">Are you sure you want to unblock <b id="user-to-unblock-name"></b>? They will regain access to their account.</p>
+            </div>
+            <div class="p-4 bg-gray-700/20 flex justify-end gap-4 rounded-b-xl">
+                <button id="cancel-unblock-btn" class="py-2 px-5 rounded-lg font-semibold hover:bg-gray-600">Cancel</button>
+                <button id="confirm-unblock-btn" class="py-2 px-5 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">Unblock User</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Projects Modal -->
+    <div id="projects-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-2xl relative">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                     <h3 class="text-xl font-bold">Saved Projects</h3>
+                     <button id="close-projects-modal-btn" class="p-2 rounded-full hover:bg-gray-600/50 -mr-2 -mt-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <p class="text-sm text-gray-400 mb-4">Viewing projects for: <b id="projects-user-email"></b></p>
+                <div id="projects-list-container" class="max-h-96 overflow-y-auto pr-2">
+                    <!-- Projects will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Preview Modal -->
+    <div id="code-preview-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-4xl h-[80vh] relative flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
+                <h3 id="code-preview-title" class="text-xl font-bold">Live Preview</h3>
+                <button id="close-code-preview-btn" class="p-2 rounded-full hover:bg-gray-600/50"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex-grow bg-white">
+                <iframe id="project-preview-iframe" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hosted Page Preview Modal -->
+    <div id="hosted-page-preview-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-6xl h-[90vh] relative flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h3 class="text-xl font-bold">Hosted Page Preview</h3>
+                    <p class="text-sm text-gray-400" id="hosted-page-info"></p>
+                </div>
+                <button id="close-hosted-preview-btn" class="p-2 rounded-full hover:bg-gray-600/50"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex-grow bg-white">
+                <iframe id="hosted-preview-iframe" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Hosting Limit Modal -->
+    <div id="edit-limit-modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="modal-backdrop fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="content-card rounded-xl w-full max-w-md relative">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Edit Hosting Limit</h3>
+                    <button id="close-edit-limit-btn" class="p-2 rounded-full hover:bg-gray-600/50"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <p class="text-sm text-gray-400 mb-4">User: <b id="edit-limit-user-email"></b></p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Current Limit</label>
+                        <input type="text" id="current-limit-display" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">New Limit</label>
+                        <input type="number" id="new-hosting-limit" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white" min="0" placeholder="Enter new limit">
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button id="save-limit-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg">Save Changes</button>
+                        <button id="cancel-limit-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        const state = {
+            users: [],
+            messages: [],
+            projects: {},
+            stats: {}
+        };
+        let userIdToAction = null;
+
+        // --- UI ELEMENTS & HELPERS ---
+        const getElement = id => document.getElementById(id);
+        const queryAll = selector => document.querySelectorAll(selector);
+
+        // --- API FUNCTIONS ---
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const data = await response.json();
+                if (data.success) {
+                    state.stats = data.stats;
+                    updateDashboardStats();
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        };
+
+        const fetchHourlyRegistrations = async () => {
+            try {
+                const response = await fetch('/api/admin/registrations-by-hour');
+                const data = await response.json();
+                if (data.success) {
+                    const labels = data.data.map(item => item.label);
+                    const counts = data.data.map(item => item.count);
+                    renderChart('user-regs-chart', 'line', labels, counts, 'New Users', '#f87171');
+                }
+            } catch (error) {
+                console.error('Error fetching hourly registrations:', error);
+            }
+        };
+
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch('/api/admin/users');
+                const data = await response.json();
+                if (data.success) {
+                    state.users = data.users;
+                    // Fetch project counts for all users
+                    await fetchAllUserProjectCounts();
+                    renderUserTable();
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        };
+
+        const fetchAllUserProjectCounts = async () => {
+            const promises = state.users.map(async (user) => {
+                try {
+                    const response = await fetch(`/api/admin/users/${user.id}/projects`);
+                    const data = await response.json();
+                    if (data.success) {
+                        state.projects[user.id] = data.projects;
+                        console.log(`Loaded ${data.projects.length} projects for user ${user.email}`);
+                    } else {
+                        console.error(`Failed to fetch projects for user ${user.email}:`, data.message);
+                        state.projects[user.id] = [];
+                    }
+                } catch (error) {
+                    console.error(`Error fetching projects for user ${user.id}:`, error);
+                    state.projects[user.id] = [];
+                }
+            });
+            await Promise.all(promises);
+        };
+
+        const fetchMessages = async () => {
+            try {
+                const response = await fetch('/api/admin/messages');
+                const data = await response.json();
+                if (data.success) {
+                    state.messages = data.messages;
+                    renderMessages();
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        };
+
+        const fetchHostedPages = async () => {
+            try {
+                const response = await fetch('/api/admin/hosted-pages');
+                const data = await response.json();
+                if (data.success) {
+                    state.hostedPages = data.pages;
+                    state.users = data.users;
+                    populateUserFilter();
+                    renderHostedPagesTable();
+                }
+            } catch (error) {
+                console.error('Error fetching hosted pages:', error);
+            }
+        };
+
+        const populateUserFilter = () => {
+            const filter = getElement('hosted-pages-filter');
+            filter.innerHTML = '<option value="all">All Users</option>';
+            state.users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.email;
+                filter.appendChild(option);
+            });
+        };
+
+        const renderHostedPagesTable = () => {
+            const container = getElement('hosted-pages-table');
+            const filter = getElement('hosted-pages-filter');
+            const selectedUserId = filter.value;
+            
+            let filteredPages = state.hostedPages;
+            if (selectedUserId !== 'all') {
+                filteredPages = state.hostedPages.filter(page => page.user_id == selectedUserId);
+            }
+
+            if (filteredPages.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">No hosted pages found.</p>';
+                return;
+            }
+
+            const table = `
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-3 px-4">Page Title</th>
+                            <th class="text-left py-3 px-4">User</th>
+                            <th class="text-left py-3 px-4">Hosting Limit</th>
+                            <th class="text-left py-3 px-4">Status</th>
+                            <th class="text-left py-3 px-4">Created</th>
+                            <th class="text-left py-3 px-4">Expires</th>
+                            <th class="text-center py-3 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredPages.map(page => `
+                            <tr class="border-b border-gray-800 hover:bg-gray-800/50">
+                                <td class="py-3 px-4">
+                                    <div class="font-medium">${page.title}</div>
+                                    <div class="text-xs text-gray-400">ID: ${page.id}</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="text-sm">${page.user_email}</div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="text-sm">
+                                        ${(() => {
+                                            const user = state.users.find(u => u.id === page.user_id);
+                                            return user ? (user.hosting_limit || 'Unlimited') : 'Unknown';
+                                        })()}
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 rounded-full text-xs ${page.status === 'Live' ? 'bg-green-900 text-green-300' : 'bg-gray-900 text-gray-300'}">
+                                        ${page.status}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4 text-sm text-gray-400">${new Date(page.created_at).toLocaleDateString()}</td>
+                                <td class="py-3 px-4 text-sm text-gray-400">${new Date(page.expiration_date).toLocaleDateString()}</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex justify-center gap-2">
+                                        <button onclick="previewHostedPage(${page.id})" class="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white" title="Preview">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="editUserLimit(${page.user_id}, '${page.user_email}')" class="p-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white" title="Edit User Limit">
+                                            <i data-lucide="settings" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = table;
+            lucide.createIcons();
+        };
+
+        const previewHostedPage = (pageId) => {
+            const page = state.hostedPages.find(p => p.id === pageId);
+            if (!page) return;
+
+            const modal = getElement('hosted-page-preview-modal');
+            const iframe = getElement('hosted-preview-iframe');
+            const info = getElement('hosted-page-info');
+            
+            info.textContent = `${page.title} - ${page.user_email} - Created: ${new Date(page.created_at).toLocaleDateString()}`;
+            
+            // Create a data URL with the page content
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${page.title}</title>
+                </head>
+                <body>
+                    ${page.code}
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            iframe.src = url;
+            
+            openModal(modal);
+        };
+
+        const editUserLimit = (userId, userEmail) => {
+            const modal = getElement('edit-limit-modal');
+            const userEmailElement = getElement('edit-limit-user-email');
+            const currentLimitElement = getElement('current-limit-display');
+            const newLimitElement = getElement('new-hosting-limit');
+            
+            userEmailElement.textContent = userEmail;
+            
+            // Get current limit from user data
+            const user = state.users.find(u => u.id === userId);
+            const currentLimit = user ? (user.hosting_limit || 'Unlimited') : 'Unknown';
+            currentLimitElement.value = currentLimit;
+            newLimitElement.value = '';
+            
+            // Store current user ID for saving
+            modal.dataset.userId = userId;
+            
+            openModal(modal);
+        };
+
+        const fetchUserProjects = async (userId) => {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/projects`);
+                const data = await response.json();
+                if (data.success) {
+                    state.projects[userId] = data.projects;
+                    return data.projects;
+                }
+            } catch (error) {
+                console.error('Error fetching user projects:', error);
+            }
+            return [];
+        };
+
+        const toggleUserBlock = async (userId) => {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/toggle-block`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    // Update user status in state
+                    const user = state.users.find(u => u.id === userId);
+                    if (user) {
+                        user.status = data.is_blocked ? 'Blocked' : 'Active';
+                    }
+                    // Re-fetch users to get updated data
+                    await fetchUsers();
+                    return true;
+                }
+            } catch (error) {
+                console.error('Error toggling user block:', error);
+            }
+            return false;
+        };
+
+        const updateDashboardStats = () => {
+            const totalUsersEl = document.querySelector('.content-card:nth-child(1) p:last-child');
+            const activeSessionsEl = document.querySelector('.content-card:nth-child(2) p:last-child');
+            const blockedUsersEl = document.querySelector('.content-card:nth-child(3) p:last-child');
+            
+            if (totalUsersEl) totalUsersEl.textContent = state.stats.total_users || 0;
+            if (activeSessionsEl) activeSessionsEl.textContent = state.stats.active_sessions || 0;
+            if (blockedUsersEl) blockedUsersEl.textContent = state.stats.blocked_users || 0;
+        };
+
+        // --- CHARTING ---
+        const chartInstances = {};
+        const renderChart = (ctxId, type, labels, data, label, color) => {
+            const ctx = getElement(ctxId)?.getContext('2d');
+            if (!ctx) return;
+            if (chartInstances[ctxId]) chartInstances[ctxId].destroy();
+            chartInstances[ctxId] = new Chart(ctx, {
+                type,
+                data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: `${color}33`, fill: true, tension: 0.4 }] },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { labels: { color: '#e0e0e0' } } 
+                    }, 
+                    scales: { 
+                        x: { 
+                            ticks: { 
+                                color: '#9ca3af',
+                                maxTicksLimit: 20,
+                                callback: function(value, index, values) {
+                                    // Show every 5th label to avoid overcrowding
+                                    return index % 5 === 0 ? labels[index] : '';
+                                }
+                            }, 
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' } 
+                        }, 
+                        y: { 
+                            ticks: { color: '#9ca3af' }, 
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' } 
+                        } 
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        };
+
+        // --- NAVIGATION ---
+        const sidebar = getElement('sidebar');
+        const sidebarOverlay = getElement('sidebar-overlay');
+        const sidebarLinks = queryAll('.sidebar-link');
+        const pageContents = queryAll('.page-content');
+        const pageTitle = getElement('page-title');
+
+        const closeSidebar = () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.add('hidden');
+        };
+
+        const openSidebar = () => {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.remove('hidden');
+        };
+
+        const navigateToPage = pageId => {
+            sidebarLinks.forEach(l => l.classList.toggle('active', l.dataset.page === pageId));
+            pageContents.forEach(page => page.classList.toggle('hidden', page.id !== pageId));
+            pageTitle.textContent = document.querySelector(`.sidebar-link[data-page="${pageId}"]`).textContent.trim();
+            if (window.innerWidth < 1024) closeSidebar();
+            setTimeout(() => {
+                if (pageId === 'page-dashboard') {
+                    fetchStats();
+                    fetchHourlyRegistrations();
+                } else if (pageId === 'page-users') {
+                    fetchUsers();
+                } else if (pageId === 'page-hosted-pages') {
+                    fetchHostedPages();
+                } else if (pageId === 'page-messages') {
+                    fetchMessages();
+                }
+            }, 0);
+        };
+        sidebarLinks.forEach(link => {
+            if (link.dataset.page) {
+                link.addEventListener('click', e => { e.preventDefault(); navigateToPage(link.dataset.page); });
+            }
+        });
+        getElement('menu-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        });
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+
+        // --- RENDER FUNCTIONS ---
+        const getStatusBadge = (status) => {
+            const statusClasses = { 
+                'Blocked': 'bg-red-500/20 text-red-400', 
+                'Active': 'bg-emerald-500/20 text-emerald-400', 
+            };
+            return `<span class="px-2.5 py-1 text-xs font-medium rounded-full ${statusClasses[status] || 'bg-gray-500/20 text-gray-400'}">${status}</span>`;
+        };
+
+        const renderUserTable = () => {
+            const container = getElement('user-management-table');
+            let contentHTML = `<h3 class="font-bold text-lg mb-4">User Management</h3><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-gray-700 text-xs text-gray-400 uppercase"><tr><th class="px-6 py-3">Email</th><th class="px-6 py-3">First Sign In</th><th class="px-6 py-3">Status</th><th class="px-6 py-3">Projects</th><th class="px-6 py-3 text-right">Actions</th></tr></thead><tbody>`;
+            
+            state.users.forEach(user => {
+                const projectCount = state.projects[user.id] ? state.projects[user.id].length : 0;
+                contentHTML += `
+                    <tr class="border-b border-gray-800 hover:bg-gray-700/20 user-row" data-user-id="${user.id}">
+                        <td class="px-6 py-4 font-medium">${user.email}</td>
+                        <td class="px-6 py-4 text-gray-400">${user.first_sign_in}</td>
+                        <td class="px-6 py-4 status-cell">${getStatusBadge(user.status)}</td>
+                        <td class="px-6 py-4">
+                            <button class="view-projects-btn text-indigo-400 hover:text-indigo-300 text-sm font-semibold disabled:text-gray-500 disabled:cursor-not-allowed" data-user-id="${user.id}" ${projectCount > 0 ? '' : 'disabled'}>
+                                View (${projectCount})
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            ${user.status !== 'Blocked' 
+                                ? `<button title="Block User" class="block-user-btn p-2 hover:bg-red-500/20 rounded-md"><i data-lucide="shield-off" class="w-4 h-4 text-red-400"></i></button>`
+                                : `<button title="Unblock User" class="unblock-user-btn p-2 hover:bg-emerald-500/20 rounded-md"><i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i></button>`
+                            }
+                        </td>
+                    </tr>`;
+            });
+
+            contentHTML += `</tbody></table></div>`;
+            container.innerHTML = contentHTML;
+            lucide.createIcons();
+        };
+
+        const renderMessages = () => {
+            const container = getElement('messages-container');
+            let contentHTML = `<h3 class="font-bold text-lg mb-4">Contact Form Messages</h3>`;
+            if (state.messages.length === 0) {
+                contentHTML += `<p class="text-gray-400">No new messages.</p>`;
+            } else {
+                contentHTML += `<div class="space-y-4">`;
+                state.messages.forEach(msg => {
+                    contentHTML += `
+                        <div class="bg-black/20 p-4 rounded-lg border border-gray-700">
+                            <div class="flex justify-between items-start flex-col sm:flex-row gap-2">
+                                <div>
+                                    <p class="font-bold text-white">${msg.name}</p>
+                                    <a href="mailto:${msg.email}" class="text-sm text-indigo-400">${msg.email}</a>
+                                </div>
+                                <span class="text-xs text-gray-500 flex-shrink-0">${msg.timestamp}</span>
+                            </div>
+                            <p class="mt-3 text-gray-300 text-sm">${msg.message}</p>
+                        </div>
+                    `;
+                });
+                contentHTML += `</div>`;
+            }
+            container.innerHTML = contentHTML;
+        };
+        
+        const renderProjectsForUser = (userId) => {
+            const user = state.users.find(u => u.id === userId);
+            if (!user) {
+                console.error('User not found:', userId);
+                return;
+            }
+            
+            const userProjects = state.projects[userId] || [];
+            getElement('projects-user-email').textContent = user.email;
+            const container = getElement('projects-list-container');
+            
+            if (userProjects.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-8">This user has no saved projects.</p>`;
+                return;
+            }
+
+            container.innerHTML = userProjects.map(project => `
+                <div class="bg-black/20 p-3 rounded-lg border border-gray-700 mb-3 flex justify-between items-center">
+                    <div>
+                        <p class="font-semibold text-white">${project.name}</p>
+                        <p class="text-xs text-gray-400">Last Saved: ${project.last_saved}</p>
+                    </div>
+                    <button class="preview-project-btn text-sm text-indigo-400 hover:underline" data-project-name="${project.name}">Preview</button>
+                </div>
+            `).join('');
+        };
+
+        // --- MODAL & ACTIONS ---
+        const blockModal = getElement('block-modal');
+        const unblockModal = getElement('unblock-modal');
+        const projectsModal = getElement('projects-modal');
+        const codePreviewModal = getElement('code-preview-modal');
+        const openModal = (modal) => modal.classList.add('open');
+        const closeModal = (modal) => modal.classList.remove('open');
+
+        getElement('user-management-table').addEventListener('click', e => {
+            const blockBtn = e.target.closest('.block-user-btn');
+            const unblockBtn = e.target.closest('.unblock-user-btn');
+            const viewProjectsBtn = e.target.closest('.view-projects-btn');
+
+            if (blockBtn) {
+                userIdToAction = parseInt(blockBtn.closest('tr').dataset.userId);
+                const user = state.users.find(u => u.id === userIdToAction);
+                getElement('user-to-block-name').textContent = user.email;
+                openModal(blockModal);
+            }
+            if (unblockBtn) {
+                userIdToAction = parseInt(unblockBtn.closest('tr').dataset.userId);
+                const user = state.users.find(u => u.id === userIdToAction);
+                getElement('user-to-unblock-name').textContent = user.email;
+                openModal(unblockModal);
+            }
+            if (viewProjectsBtn) {
+                userIdToAction = parseInt(viewProjectsBtn.dataset.userId);
+                // Fetch projects for this user if not already loaded
+                if (!state.projects[userIdToAction]) {
+                    fetchUserProjects(userIdToAction).then(() => {
+                        renderProjectsForUser(userIdToAction);
+                        openModal(projectsModal);
+                    });
+                } else {
+                    renderProjectsForUser(userIdToAction);
+                    openModal(projectsModal);
+                }
+            }
+        });
+
+        getElement('projects-list-container').addEventListener('click', e => {
+            const previewBtn = e.target.closest('.preview-project-btn');
+            if (previewBtn) {
+                const projectName = previewBtn.dataset.projectName;
+                const userProjects = state.projects[userIdToAction] || [];
+                const project = userProjects.find(p => p.name === projectName);
+                if (project) {
+                    getElement('code-preview-title').textContent = `Live Preview: ${project.name}`;
+                    const iframe = getElement('project-preview-iframe');
+                    iframe.srcdoc = project.code;
+                    openModal(codePreviewModal);
+                }
+            }
+        });
+
+        getElement('cancel-block-btn').addEventListener('click', () => closeModal(blockModal));
+        getElement('confirm-block-btn').addEventListener('click', async () => {
+            const success = await toggleUserBlock(userIdToAction);
+            if (success) {
+                closeModal(blockModal);
+            }
+        });
+        
+        getElement('cancel-unblock-btn').addEventListener('click', () => closeModal(unblockModal));
+        getElement('confirm-unblock-btn').addEventListener('click', async () => {
+            const success = await toggleUserBlock(userIdToAction);
+            if (success) {
+                closeModal(unblockModal);
+            }
+        });
+        
+        getElement('close-projects-modal-btn').addEventListener('click', () => closeModal(projectsModal));
+        projectsModal.querySelector('.modal-backdrop').addEventListener('click', () => closeModal(projectsModal));
+        
+        getElement('close-code-preview-btn').addEventListener('click', () => closeModal(codePreviewModal));
+        codePreviewModal.querySelector('.modal-backdrop').addEventListener('click', () => closeModal(codePreviewModal));
+        
+        // Hosted pages modal event listeners
+        getElement('close-hosted-preview-btn').addEventListener('click', () => closeModal(getElement('hosted-page-preview-modal')));
+        getElement('hosted-page-preview-modal').querySelector('.modal-backdrop').addEventListener('click', () => closeModal(getElement('hosted-page-preview-modal')));
+        
+        // Edit limit modal event listeners
+        getElement('close-edit-limit-btn').addEventListener('click', () => closeModal(getElement('edit-limit-modal')));
+        getElement('cancel-limit-btn').addEventListener('click', () => closeModal(getElement('edit-limit-modal')));
+        getElement('edit-limit-modal').querySelector('.modal-backdrop').addEventListener('click', () => closeModal(getElement('edit-limit-modal')));
+        
+        // Save limit button
+        getElement('save-limit-btn').addEventListener('click', async () => {
+            const modal = getElement('edit-limit-modal');
+            const userId = modal.dataset.userId;
+            const newLimit = getElement('new-hosting-limit').value;
+            
+            if (!newLimit || newLimit < 0) {
+                alert('Please enter a valid limit (0 or greater)');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/hosting-limit`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ hosting_limit: parseInt(newLimit) })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    closeModal(modal);
+                    // Update the user data in state
+                    const user = state.users.find(u => u.id === userId);
+                    if (user) {
+                        user.hosting_limit = parseInt(newLimit);
+                    }
+                    // Refresh the hosted pages table
+                    fetchHostedPages();
+                    alert('Hosting limit updated successfully!');
+                } else {
+                    alert('Error updating hosting limit: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error updating hosting limit:', error);
+                alert('Error updating hosting limit');
+            }
+        });
+        
+        // Hosted pages filter and refresh
+        getElement('hosted-pages-filter').addEventListener('change', renderHostedPagesTable);
+        getElement('refresh-hosted-pages').addEventListener('click', fetchHostedPages);
+        
+        // --- INITIAL LOAD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            navigateToPage('page-dashboard');
+        });
+    </script>
+</body>
+</html>
+
